@@ -29,12 +29,44 @@
   @keyframes blink {0%{opacity:1}50%{opacity:0.2}100%{opacity:1}}
   h1{animation:blink 0.3s infinite,annoyHue 1s infinite linear;background:linear-gradient(90deg,red,green,blue,yellow,pink,orange);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;font-size:24px;}
   @keyframes annoyHue {from {filter:hue-rotate(0deg);} to {filter:hue-rotate(360deg);} }
-  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:#111;color:#fff;padding:8px 12px;border-radius:6px;border:2px solid #f0f;display:none;font-family:monospace}
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:#111;color:#fff;padding:8px 12px;border-radius:6px;border:2px solid #f0f;display:none;font-family:monospace;z-index:95000}
   #cursorEmoji{position:fixed;font-size:30px;pointer-events:none;z-index:9999;mix-blend-mode:difference;transform:translate(-50%,-50%);}
   #cursorEmoji img{width:36px;height:36px;display:block;}
+
+  /* --- תוספות: הכל מוצג בתוך הדף בלבד --- */
+  #battery{position:fixed;top:8px;left:8px;background:#000;color:#0f0;font:bold 14px monospace;padding:4px 8px;border:2px solid #0f0;z-index:90000}
+  #battery.low{color:#f00;border-color:#f00;animation:blink .5s infinite}
+  #notifs{position:fixed;top:48px;right:10px;width:250px;display:flex;flex-direction:column;gap:6px;z-index:99000}
+  .notif{position:relative;background:#fff;color:#000;border:2px solid #000;padding:8px 26px 8px 8px;font:13px Tahoma,Arial,sans-serif;box-shadow:3px 3px 0 #f0f}
+  .nx{position:absolute;left:4px;top:4px;background:none;border:none;cursor:pointer;font-weight:bold}
+  .cookie{position:fixed;left:0;right:0;bottom:0;height:44px;box-sizing:border-box;background:#222;color:#fff;padding:0 14px;font:13px Tahoma,Arial,sans-serif;display:flex;gap:10px;align-items:center;justify-content:center;z-index:98000}
+  .cookie button{padding:3px 8px;font:12px Tahoma,Arial,sans-serif;cursor:pointer}
+  .cookie .cx{opacity:.3;cursor:not-allowed}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;z-index:100000}
+  .popup{background:#c0c0c0;border:2px outset #fff;width:300px;max-width:88vw;box-shadow:6px 6px 0 #000;font:14px Tahoma,Arial,sans-serif;color:#000}
+  .ptitle{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;font-weight:bold;padding:3px 5px;display:flex;justify-content:space-between;align-items:center}
+  .px{background:#c0c0c0;border:1px outset #fff;width:20px;height:18px;font:bold 11px sans-serif;padding:0;cursor:pointer;color:#000}
+  .pbody{display:flex;gap:12px;padding:14px 12px 8px;align-items:flex-start}
+  .pi{font-size:30px;line-height:1}
+  .pact{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:6px 12px 12px}
+  .pact button{min-width:70px;padding:4px 10px;background:#c0c0c0;border:2px outset #fff;font:13px Tahoma,Arial,sans-serif;color:#000;cursor:pointer;transition:transform .15s}
+  .full{display:none;position:fixed;inset:0;z-index:200000;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;font-family:Tahoma,Arial,sans-serif;color:#fff}
+  #updateScreen{background:#1d3d6e}
+  #bsod{background:#0000aa;font-family:'Courier New',monospace}
+  #shutdown{background:#000;color:#555;font-size:22px}
+  .bigbar{width:70%;height:22px;border:2px solid #fff;margin:10px 0}
+  .bigbar i{display:block;height:100%;width:0;background:#fff}
+  #busy{display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.6);color:#fff;font:bold 18px Tahoma,Arial,sans-serif;z-index:150000}
+#floatad{position:fixed;z-index:99500;background:#0f0;color:#000;border:3px ridge #f0f;padding:6px 10px;font:bold 13px Tahoma,Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:left 1.2s ease,top 1.2s ease,transform .4s ease;box-shadow:4px 4px 0 #000}
+#marquee{position:fixed;bottom:0;left:0;right:0;height:26px;line-height:26px;background:#ff0;color:#f00;font:bold 14px Tahoma,Arial,sans-serif;overflow:hidden;white-space:nowrap;border-top:3px double #000;z-index:97000}
+#marquee div{display:inline-block;animation:marq 16s linear infinite}
+@keyframes marq{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
 </style>
 </head>
 <body>
+  <div id="battery">🔋 17%</div>
+  <div id="notifs"></div>
+
   <div id="gameWrap">
     <h1>המשחק הכי גרוע בעולם</h1>
     <canvas id="c" width="480" height="320"></canvas>
@@ -42,6 +74,7 @@
       <button id="spawnbtn" class="btn">צור חיית מחמד</button>
       <button id="sellbtn" class="btn">מכור חיית מחמד</button>
       <button id="trashbtn" class="btn">לחץ אותי!</button>
+      <button id="supportbtn" class="btn">תמיכה טכנית 📞</button>
     </div>
     <div class="annoy" id="ann">מטבעות: 0 • חיות: 0</div>
   </div>
@@ -52,61 +85,244 @@
     <img id="cursorImg" src="http://photos.com/mouse.jpg" alt="cursor">
   </div>
 
-<script>
-// באגים מכוונים – כמו שהיה
-let coins=0;let pets=[];let tick=0;let clickCount=0;
-const canvas=document.getElementById('c');const ctx=canvas.getContext('2d');
-const gameWrap=document.getElementById('gameWrap');
+  <div id='marquee'><div>שים לב: המשחק הזה לא מיועד לעיניים רגישות • הסוללה נמוכה • מומלץ לחבר מטען • הניסיון החינמי הסתיים • המשחק מתעדכן כל הזמן • </div></div>
+  <div id="busy"></div>
 
+  <div id="updateScreen" class="full">
+    <div style="font-size:56px">⬇️</div>
+    <h2>מתקין עדכון חשוב...</h2>
+    <div>אל תכבה את המחשב</div>
+    <div class="bigbar"><i id="upBar"></i></div>
+    <div id="upPct">0%</div>
+    <div id="upMsg">מכין קבצים...</div>
+    <button id="upClose" class="btn" style="display:none;margin-top:16px">סגור</button>
+  </div>
+
+  <div id="bsod" class="full">
+    <div style="font-size:90px">:(</div>
+    <div style="font-size:20px;margin:16px 0">המחשב נתקל בבעיה. נאסוף רק קצת מידע על השגיאה.</div>
+    <div>שגיאה: LUNCH_BREAK_NOT_FOUND</div>
+    <div style="margin-top:24px">לחץ על מקש כלשהו כדי להמשיך.</div>
+  </div>
+
+  <div id="shutdown" class="full">המחשב נכבה... (אין מטען)</div>
+
+<script>
+// ===== באגים מכוונים – כמו שהיה, ועכשיו עם יותר =====
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let coins=0;let pets=[];let tick=0;let clickCount=0;
+let battery=17, powerSave=false, updating=false;
+const canvas=$('c');const ctx=canvas.getContext('2d');
+const gameWrap=$('gameWrap');
 let targetX=0,targetY=0;let currentX=0,currentY=0;
 
-// --- קוד הסמן החדש ---
-const cursorEl=document.getElementById('cursorEmoji');
-const cursorImg=document.getElementById('cursorImg');
-
-cursorImg.onerror = function(){
+// --- קוד הסמן ---
+const cursorEl=$('cursorEmoji');
+const cursorImg=$('cursorImg');
+cursorImg.onerror=function(){
   cursorEl.innerText='🖱️';
   cursorEl.style.fontSize='30px';
   if(cursorImg) cursorImg.remove();
 };
-
-window.addEventListener('mousemove',e=>{
-  targetX=e.pageX;
-  targetY=e.pageY;
-});
-
+window.addEventListener('mousemove',e=>{targetX=e.pageX;targetY=e.pageY;});
 function followCursor(){
-  currentX += (targetX - currentX) * 0.05;
-  currentY += (targetY - currentY) * 0.05;
-  cursorEl.style.left = currentX + 'px';
-  cursorEl.style.top = currentY + 'px';
+  currentX+=(targetX-currentX)*0.05;
+  currentY+=(targetY-currentY)*0.05;
+  cursorEl.style.left=currentX+'px';
+  cursorEl.style.top=currentY+'px';
   requestAnimationFrame(followCursor);
 }
 followCursor();
-// --- סוף קוד הסמן ---
 
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function showToast(t,m=1800){const e=document.getElementById('toast');e.innerText=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>{e.style.display='none'},m)}
+function showToast(t,m=1800){const e=$('toast');e.innerText=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>{e.style.display='none'},m)}
 function beep(){try{const a=new(AudioContext||webkitAudioContext)();const o=a.createOscillator();o.type='square';o.frequency.value=rand(200,1200);o.connect(a.destination);o.start();setTimeout(()=>{o.stop();a.close()},150)}catch(e){}}
 function maybeThrowRefError(){ if(Math.random()<0.08){ try{ nonExistentFunctionCall(); }catch(e){ console.error('caught ref error',e); } } }
-function annoyingAction(){const r=rand(0,3);switch(r){case 0:alert('מסך קופץ!');break;case 1:document.body.style.background=`rgb(${rand(0,255)},${rand(0,255)},${rand(0,255)})`;break;case 2:showToast('תקלה מוזרה!');break;case 3:document.title='המשחק הכי גרוע בעולם באמת';break;}}
-function randomAnnoy(){const chance=Math.floor(Math.random()*20);if(chance===0){beep();alert('צפצוף אקראי!');return;}clickCount++;if(clickCount%2===1){beep();}else{annoyingAction();}}
-function spawnPet(){const p={x:rand(10,460),y:rand(10,300),w:rand(10,40),h:rand(10,40),color:`rgb(${rand(0,255)},${rand(0,255)},${rand(0,255)})`};pets.push(p);updateUI();}
-function sellPet(){if(pets.length===0){showToast('אין חיות למכור');return;} if(Math.random()<0.04){ pets=null; console.warn('pets=null'); return;} const i=rand(0,pets.length-1);pets.splice(i,1);coins+=rand(1,10);updateUI();}
+
+// --- מערכת פופאפים: תור, אחד בכל פעם ---
+const pq=[];let popupOpen=false;
+function popup(o){
+  if(pq.length>=3) return;
+  pq.push(o);
+  setTimeout(showNext,rand(150,600));
+}
+function showNext(){
+  if(popupOpen||!pq.length) return;
+  const o=pq.shift();popupOpen=true;
+  const ov=document.createElement('div');
+  ov.className='overlay';
+  ov.innerHTML=`<div class="popup"><div class="ptitle"><span>${o.title||'הודעת מערכת'}</span><button class="px">✕</button></div><div class="pbody"><div class="pi">${o.icon||'⚠️'}</div><div>${o.text||''}</div></div><div class="pact"></div></div>`;
+  document.body.appendChild(ov);
+  const act=ov.querySelector('.pact');
+  (o.buttons||[{label:'אישור'}]).forEach(b=>{
+    const btn=document.createElement('button');
+    btn.textContent=b.label;
+    if(b.dodge) dodgy(btn);
+    btn.onclick=()=>{ if(b.run) b.run(); closePopup(ov); };
+    act.appendChild(btn);
+  });
+  ov.querySelector('.px').onclick=()=>{
+    if(Math.random()<0.33) return closePopup(ov);
+    ov.querySelector('.ptitle span').textContent=pick(['לא, לא ניתן לסגור','הכפתור הזה עובד... לפעמים','נסה שוב, בבקשה']);
+    ov.querySelector('.popup').animate([{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'translateX(0)'}],{duration:220});
+  };
+}
+function closePopup(ov){
+  ov.remove();popupOpen=false;
+  if(Math.random()<0.4) setTimeout(()=>popup(pick(pickers)()),rand(300,1200));
+  setTimeout(showNext,rand(400,1500));
+}
+function dodgy(btn){
+  let n=0;
+  btn.addEventListener('mouseenter',()=>{ if(n++<4) btn.style.transform=`translate(${rand(-110,110)}px,${rand(-30,30)}px)`; });
+}
+
+// --- סוגי הפופאפים ---
+const lowBatteryPopup=()=>({icon:'🔋',title:'אזהרת סוללה',
+  text:`הסוללה נמוכה (${battery}%).<br>${battery<=5?'המחשב ייכבה בעוד מעט.':'חבר מטען כדי להמשיך לשחק.'}`,
+  buttons:[{label:'אוקיי',dodge:true},{label:'הפעל חיסכון',run:powerSaveFlow}]});
+const updatePopup=()=>({icon:'⬇️',title:'עדכון חשוב',
+  text:'גרסה 2.0.1 זמינה.<br>כוללת תיקוני אבטחה, שיפורים, ופיצ׳ר שאתה לא תשתמש בו.',
+  buttons:[{label:'התקן עכשיו',run:updateFlow},{label:'מאוחר יותר',dodge:true,run:()=>{showToast('בחרת "מאוחר יותר". מתקין בכל זאת.');updateFlow();}}]});
+const prizePopup=()=>({icon:'🎉',title:'מזל טוב!',
+  text:`אתה המבקר ה-${rand(999990,1000010)} באתר!<br>לחץ על הכפתור לקבלת הפרס.`,
+  buttons:[{label:'קבל פרס',run:()=>popup({icon:'🎁',title:'הפרס שלך',text:'הפרס: עוד פופאפ.'})},{label:'לא תודה',dodge:true}]});
+const surveyPopup=()=>({icon:'📝',title:'סקר שביעות רצון',text:'איך היית מדרג את המשחק?',
+  buttons:[1,2,3,4,5].map(n=>({label:'⭐'.repeat(n),run:()=>popup({icon:'😢',title:'תודה על המשוב',text:n<3?'הציון נשמר. המשחק מצטער.':'הציון נשמר. (הוא לא נשלח לשום מקום.)'})}))});
+const adPopup=()=>({icon:'🎮',title:'הורד את הגרסה המלאה בחינם!',text:'רק 3 צעדים פשוטים.<br>ההורדה תתחיל מיד.',
+  buttons:[{label:'הורד עכשיו',run:()=>popup({icon:'⏳',title:'מוריד...',text:'ההורדה התחילה.<br>זמן משוער: 47 דקות ו-12 שניות.'})},{label:'לא, תודה',dodge:true}]});
+const leavePopup=()=>({icon:'🚪',title:'יציאה',text:'האם אתה בטוח שאתה רוצה לצאת מהמשחק?',
+  buttons:[{label:'כן',dodge:true,run:()=>popup({icon:'🙂',title:'ביטול יציאה',text:'היציאה בוטלה. המשחק נשאר איתך.'})},{label:'לא',dodge:true}]});
+const trialPopup=()=>({icon:'⏳',title:'Your free trial ended',
+  text:'תקופת הניסיון שלך הסתיימה.<br>כדי להמשיך לשחק, בחר תוכנית.',
+  buttons:[{label:'שדרג עכשיו',run:()=>popup({icon:'💳',title:'שדרוג',text:'כדי לשדרג צריך כרטיס אשראי.<br>ואז צריך לשדרג את הכרטיס.'})},{label:'הארך ניסיון',dodge:true,run:()=>popup({icon:'🔁',title:'הוארך',text:'הניסיון הוארך ב-0 ימים.<br>הוא מסתיים שוב מיד.'})}]});
+const pickers=[lowBatteryPopup,updatePopup,prizePopup,surveyPopup,adPopup,leavePopup,trialPopup,trialPopup,trialPopup,trialPopup];
+function randomPopupLoop(){popup(pick(pickers)());setTimeout(randomPopupLoop,rand(14000,26000));}
+
+// --- busy / חיסכון / עדכון / מסך כחול / כיבוי ---
+function busy(text,ms,done){const b=$('busy');b.textContent='⏳ '+text;b.style.display='flex';setTimeout(()=>{b.style.display='none';done&&done();},ms);}
+function powerSaveFlow(){
+  busy('מפעיל חיסכון בסוללה...',1800,()=>{
+    powerSave=true;updateBattery();startDraw();
+    popup({icon:'🔋',title:'חיסכון בסוללה',text:'מצב חיסכון פעיל.<br>המשחק יתנהל כעת בחצי מהירות.'});
+  });
+}
+function updateFlow(){
+  if(updating) return;updating=true;
+  const bar=$('upBar'),pct=$('upPct'),msg=$('upMsg');
+  $('updateScreen').style.display='flex';$('upClose').style.display='none';
+  msg.textContent='מכין קבצים...';
+  let p=0,tries=0;
+  const setP=v=>{p=v;bar.style.width=v+'%';pct.textContent=v+'%';};
+  const run=()=>{
+    const iv=setInterval(()=>{
+      setP(Math.min(99,p+rand(1,4)));
+      if(p>=99){
+        clearInterval(iv);
+        msg.textContent='כמעט... אל תכבה את המחשב';
+        setTimeout(()=>{
+          tries++;
+          if(tries<3){ setP(0); msg.textContent=`שגיאה 0x80070005. מנסה שוב (${tries}/3)...`; setTimeout(run,1500); }
+          else { setP(100); msg.textContent='העדכון הושלם! המשחק לא השתנה בכלל.'; $('upClose').style.display='inline-block'; updating=false; }
+        },rand(2000,4000));
+      }
+    },90);
+  };
+  run();
+}
+function bsod(){
+  const b=$('bsod');if(b.style.display==='flex') return;
+  b.style.display='flex';const t0=Date.now();
+  const off=force=>{
+    if(force!==true&&Date.now()-t0<2500) return;
+    b.style.display='none';
+    window.removeEventListener('keydown',onAny);
+    b.removeEventListener('click',onAny);
+  };
+  const onAny=()=>off(false);
+  window.addEventListener('keydown',onAny);
+  b.addEventListener('click',onAny);
+  setTimeout(()=>{if(b.style.display==='flex') off(true);},20000);
+}
+function bsodLoop(){bsod();setTimeout(bsodLoop,rand(60000,100000));}
+
+// --- סוללה ---
+function updateBattery(){const el=$('battery');el.textContent=`🔋 ${battery}%${powerSave?' (חיסכון)':''}`;el.classList.toggle('low',battery<=10);}
+function drainBattery(){
+  if(!powerSave||Math.random()<0.3) battery=Math.max(0,battery-1);
+  updateBattery();
+  if(battery===10||battery===5) popup(lowBatteryPopup());
+  if(battery===0) return shutdown();
+  setTimeout(drainBattery,rand(6000,12000));
+}
+function shutdown(){
+  $('shutdown').style.display='flex';
+  setTimeout(()=>{
+    $('shutdown').style.display='none';
+    battery=rand(4,8);updateBattery();
+    popup({icon:'🔌',title:'הופעל מחדש',text:`המחשב הופעל עם ${battery}% סוללה.<br>מומלץ לחבר מטען.`});
+    setTimeout(drainBattery,rand(6000,12000));
+  },3000);
+}
+
+// --- הודעות שמתרבות כשסוגרים אותן ---
+const notifTexts=['יש לך 3 הודעות חדשות שלא ביקשת.','משהו השתנה במחשב שלך. לא נורא.','אל תשכח לשמור את ההתקדמות! (אין שמירה.)','עדכון זמין לנוכחות שלך.','המחשב שלך איטי מהרגיל. נסה לסגור דברים.','בקשת חברות חדשה מ"משהו".','הסוללה התמלאה! (לא באמת.)'];
+function addNotif(){
+  const box=$('notifs');if(box.children.length>=10) return;
+  const n=document.createElement('div');n.className='notif';
+  n.innerHTML=`<span>${pick(notifTexts)}</span><button class="nx">✕</button>`;
+  n.querySelector('.nx').onclick=()=>{n.remove();addNotif();addNotif();};
+  box.appendChild(n);
+}
+function notifLoop(){addNotif();setTimeout(notifLoop,rand(5000,9000));}
+
+// --- עוגיות שאי אפשר לסגור ---
+function cookieBanner(){
+  const n=document.querySelectorAll('.cookie').length;if(n>=6) return;
+  const c=document.createElement('div');c.className='cookie';c.style.bottom=(n*46)+'px';
+  c.innerHTML='<span>אנחנו משתמשים בעוגיות. (גם לדברים שלא ביקשת.)</span><button class="cok">אני מסכים/ה</button><button class="cx" disabled title="לא זמין">✕</button>';
+  c.querySelector('.cok').onclick=()=>setTimeout(cookieBanner,800);
+  document.body.appendChild(c);
+}
+function cookieLoop(){cookieBanner();setTimeout(cookieLoop,rand(25000,40000));}
+
+// --- המשחק ---
+function spawnPet(){const p={x:rand(10,520),y:rand(10,300),w:rand(10,40),h:rand(10,40),color:`rgb(${rand(0,255)},${rand(0,255)},${rand(0,255)})`};pets.push(p);updateUI();}
+function sellPet(){if(pets.length===0){showToast('אין חיות למכור');return;} if(Math.random()<0.04){ pets=null; console.warn('pets=null'); return;} const i=rand(0,pets.length);pets.splice(i,1);coins+=''+rand(1,10);updateUI();}
 function draw(){tick++; if(Math.random()<0.05){try{ctx2.fillStyle='red';ctx2.fillRect(0,0,10,10);}catch(e){}} ctx.clearRect(0,0,canvas.width,canvas.height);
  for(const p of (pets||[])){ if(Math.random()<0.02){p.x+=rand(-300,300);p.y+=rand(-300,300);} ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.w,p.h);}
  ctx.fillStyle='#ff0';ctx.fillText('מטבעות:'+coins,10,20);
  ctx.fillStyle='#0f0';ctx.fillText('חיות:'+(pets?pets.length:'?'),10,40);
  maybeThrowRefError();
 }
-function updateUI(){ try{ document.getElementById('ann').innerText=`מטבעות: ${coins} • חיות: ${pets?pets.length:'?'} `; if(!pets || pets.length===0) document.getElementById('sellbtn').setAttribute('disabled',''); else document.getElementById('sellbtn').removeAttribute('disabled'); }catch(e){} }
+function updateUI(){ try{ $('ann').innerText=`מטבעות: ${coins} • חיות: ${pets?pets.length:'?'} `; if(pets && pets.length>0) $('sellbtn').setAttribute('disabled',''); else $('sellbtn').removeAttribute('disabled'); }catch(e){} }
 
-document.getElementById('spawnbtn').onclick=spawnPet;
-document.getElementById('sellbtn').onclick=sellPet;
-document.getElementById('trashbtn').onclick=randomAnnoy;
+function annoyingAction(){
+  switch(rand(0,4)){
+    case 0: popup({icon:'💥',title:'מסך קופץ!',text:'לחצת. זה היה שגוי.',buttons:[{label:'אוקיי',dodge:true}]}); break;
+    case 1: document.body.style.background=`rgb(${rand(0,255)},${rand(0,255)},${rand(0,255)})`; break;
+    case 2: showToast('תקלה מוזרה!'); break;
+    case 3: document.title='המשחק הכי גרוע בעולם באמת'; break;
+    case 4: $('trashbtn').style.transform=`translate(${rand(-150,150)}px,${rand(-60,60)}px)`; popup({icon:'🙃',title:'הכפתור זז',text:'הכפתור נשבר ונדד. נסה למצוא אותו.'}); break;
+  }
+}
+function randomAnnoy(){
+  const chance=Math.floor(Math.random()*20);
+  if(chance===0){beep();popup({icon:'📢',title:'צפצוף אקראי',text:'צפצפנו. בלי סיבה.',buttons:[{label:'אוקיי',dodge:true}]});return;}
+  clickCount++;
+  if(clickCount%2===1){beep();}else{annoyingAction();}
+}
 
+$('spawnbtn').onclick=()=>{ if(Math.random()<0.3) busy('שומר חיית מחמד...',rand(800,2000),spawnPet); else spawnPet(); };
+$('sellbtn').onclick=()=>{ if(pets&&pets.length&&Math.random()<0.5) popup({icon:'❓',title:'אישור',text:'למכור את החיה?',buttons:[{label:'כן',dodge:true,run:sellPet},{label:'לא',dodge:true}]}); else sellPet(); };
+$('trashbtn').onclick=randomAnnoy;
+$('upClose').onclick=()=>{$('updateScreen').style.display='none';};
+
+// --- ציור ועדכון ---
 let intervalMs=150;if(Math.random()<0.05)intervalMs=-100;
-setInterval(()=>{try{draw();updateUI();}catch(e){}},Math.abs(intervalMs));
+let drawTimer=null;
+function startDraw(){clearInterval(drawTimer);drawTimer=setInterval(()=>{try{draw();updateUI();}catch(e){}},powerSave?300:Math.abs(intervalMs));}
 
 function randomCursorFlash(){let t=rand(10000,30000);setTimeout(()=>{document.body.style.cursor='default';setTimeout(()=>{document.body.style.cursor='none';randomCursorFlash();},500);},t);}
 randomCursorFlash();
@@ -124,7 +340,7 @@ occasionalBlock();
 
 setInterval(()=>{document.querySelectorAll('.btn').forEach(b=>{if(Math.random()<0.05){b.style.width=rand(0,999)+'px';b.style.height=rand(0,300)+'px';}});},1200);
 
-setInterval(()=>{const ann=document.getElementById('ann');if(Math.random()<0.05){ann.style.color=`rgb(${rand(-500,700)},${rand(-500,700)},${rand(-500,700)})`;}},900);
+setInterval(()=>{const ann=$('ann');if(Math.random()<0.05){ann.style.color=`rgb(${rand(-500,700)},${rand(-500,700)},${rand(-500,700)})`;}},900);
 
 setInterval(()=>{if(Math.random()<0.04){const d=document.createElement('div');d.innerText='שגיאה: '+rand(1000,9999);d.style.position='fixed';d.style.left=rand(0,100)+'vw';d.style.top=rand(0,100)+'vh';d.style.color='red';d.style.fontSize='20px';d.style.zIndex=99999;document.body.appendChild(d);setTimeout(()=>d.remove(),rand(800,3000));}},700);
 
@@ -145,6 +361,58 @@ setInterval(()=>{
     }
   });
 },600);
+
+// --- כאוס ויזואלי ---
+const h1El=document.querySelector('h1');
+const titles=['המשחק הכי גרוע בעולם','המשחק הכי גרוע בעולם!!','המשחק הכי גרוע בעולם (גרסה 2)','המשחק הכי גרוע בעולם ✨'];
+const fonts=['Comic Sans MS','Impact','Papyrus','Courier New','Georgia','Brush Script MT'];
+const labels={spawnbtn:['צור חיית מחמד','צור חיית מחמד','צור חיה','צור כלום, בבקשה'],sellbtn:['מכור חיית מחמד','מכור את עצמך','מכור הכל'],trashbtn:['לחץ אותי!','אל תלחץ!','לחץ עליי שוב','לחץ אותי (בבקשה)']};
+function visualChaos(){
+  h1El.textContent=pick(titles);
+  for(const id in labels){const b=$(id);b.textContent=pick(labels[id]);b.style.transform=`rotate(${rand(-8,8)}deg)`;}
+  $('ann').style.fontFamily=pick(fonts);
+  canvas.style.filter=`hue-rotate(${rand(0,360)}deg)`;
+  setTimeout(visualChaos,rand(3000,6000));
+}
+function wobble(){
+  document.documentElement.style.transform=`skewX(${rand(-4,4)}deg)`;
+  setTimeout(()=>{document.documentElement.style.transform='';},rand(700,1200));
+  setTimeout(wobble,rand(15000,25000));
+}
+const floatAd=document.createElement('div');
+floatAd.id='floatad';
+floatAd.textContent='🔥 הדבר הכי חם! לחץ כאן';
+floatAd.onclick=()=>{popup(adPopup());moveFloatAd();};
+document.body.appendChild(floatAd);
+function moveFloatAd(){
+  floatAd.style.left=rand(0,80)+'vw';
+  floatAd.style.top=rand(10,85)+'vh';
+  floatAd.style.transform=`rotate(${rand(-15,15)}deg)`;
+}
+function floatAdLoop(){moveFloatAd();setTimeout(floatAdLoop,rand(2500,4500));}
+setTimeout(visualChaos,2000);
+setTimeout(wobble,12000);
+setTimeout(floatAdLoop,5000);
+
+// --- תמיכה טכנית (גרועה) ---
+function supportAsk(){return {icon:'🎧',title:'תמיכה טכנית',text:'שלום! אני הבוט של התמיכה.<br>האם ניסית לכבות ולהדליק את המחשב?',buttons:[{label:'כן',run:()=>popup(supportReboot())},{label:'לא',dodge:true,run:()=>popup(supportTryReboot())}]};}
+function supportTryReboot(){return {icon:'🔌',title:'תמיכה טכנית',text:'נא לכבות ולהדליק את המחשב, ואז לחזור לכאן.<br>(לא ניתן לבדוק אם עשית את זה.)',buttons:[{label:'חזרתי',run:()=>popup(supportAsk())},{label:'אין לי מחשב',dodge:true,run:()=>popup(supportNoComputer())}]};}
+function supportReboot(){return {icon:'✅',title:'תמיכה טכנית',text:'מצוין! הבעיה נפתרה?',buttons:[{label:'כן',run:()=>popup(supportClosed())},{label:'לא',run:()=>popup(supportTransfer())}]};}
+function supportTransfer(){return {icon:'📞',title:'תמיכה טכנית',text:'מעביר אותך לנציג.<br>זמן המתנה משוער: 3 שעות ו-12 דקות.',buttons:[{label:'המתן',run:()=>busy('מוזיקת המתנה... (אותו קטע, שוב)',2500,()=>popup(supportAgentLeft()))},{label:'חזור לתפריט',dodge:true,run:()=>popup(supportAsk())}]};}
+function supportAgentLeft(){return {icon:'👋',title:'הנציג עזב',text:'הנציג עזב את השיחה.<br>הפנייה נסגרה אוטומטית. מספר פנייה: 0.',buttons:[{label:'פתח פנייה חדשה',run:()=>popup(supportAsk())},{label:'סגור',dodge:true}]};}
+function supportClosed(){return {icon:'😊',title:'תמיכה טכנית',text:'שמחים שעזרנו!<br>הפנייה נסגרה לפני שהבנו מה הבעיה.',buttons:[{label:'אוקיי',run:()=>popup(supportAsk())}]};}
+function supportNoComputer(){return {icon:'🙁',title:'תמיכה טכנית',text:'לא נוכל לעזור ללא מחשב.<br>מומלץ להזמין מחשב חדש.',buttons:[{label:'אוקיי',run:()=>popup(supportAsk())}]};}
+$('supportbtn').onclick=()=>popup(supportAsk());
+
+// --- התחלה ---
+updateBattery();
+startDraw();
+setTimeout(randomPopupLoop,4000);
+setTimeout(drainBattery,6000);
+setTimeout(notifLoop,2500);
+setTimeout(cookieLoop,8000);
+setTimeout(bsodLoop,40000);
+setInterval(()=>{document.title=Math.random()<.5?'⚠️ הסוללה נמוכה!':'⬆️ עדכון זמין!';},1500);
 </script>
 </body>
 </html>
